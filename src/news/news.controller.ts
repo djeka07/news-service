@@ -105,7 +105,8 @@ export class NewsController {
     name: 'country',
     type: String,
     example: 'us',
-    required: true,
+    required: false,
+    allowEmptyValue: true,
   })
   @ApiQuery({
     name: 'page',
@@ -125,6 +126,7 @@ export class NewsController {
   async getTopHeadlines(
     @UserEmail() email: string,
     @Query('q') query: string | undefined,
+    @Query('language') language: string | undefined,
     @Query('category') category: string | undefined,
     @Query('country') country: string,
     @Query('page', ParseIntPipe) page: number = 1,
@@ -135,7 +137,15 @@ export class NewsController {
       throw new NotFoundException(`Could not find user with email ${email}`);
     }
     const responseData = this.newsService.getTopHeadlines(
-      new GetTopNewsRequest(user.apiKey, country, page, take, query, category),
+      new GetTopNewsRequest(
+        user.apiKey,
+        page,
+        take,
+        language,
+        country,
+        query,
+        category,
+      ),
     );
 
     const readingListData = this.userService.getReadingList(email);

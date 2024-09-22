@@ -8,5 +8,6 @@ import { UserModule } from 'src/user/user.module';
   imports: [HttpModule, UserModule],
   controllers: [NewsController],
   providers: [NewsService],
+  exports: [NewsService],
 })
 export class NewsModule {}

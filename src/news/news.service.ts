@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { GetNewsRequest, GetTopNewsRequest } from './news.request';
 import { firstValueFrom } from 'rxjs';
 import { NewsApiDataResponse } from './news.response';
+import { stringify } from 'qs';
 
 @Injectable()
 export class NewsService {
@@ -15,12 +16,22 @@ export class NewsService {
     this.newsApi = configService.get<string>('NEWS_API') as string;
   }
 
-  async get({ apiKey, query, page, take, sortBy, language }: GetNewsRequest) {
+  async get({
+    apiKey,
+    query,
+    page,
+    take,
+    sortBy,
+    language,
+  }: GetNewsRequest): Promise<NewsApiDataResponse> {
+    const queryParams = stringify(
+      { q: query, sortBy, page, take, language },
+      { skipNulls: true },
+    );
     const response = await firstValueFrom(
-      this.httpService.get(
-        `${this.newsApi}/everything?q=${query}&page=${page}&pageSize=${take}&sortBy=${sortBy}&language=${language}`,
-        { headers: { 'X-Api-Key': apiKey } },
-      ),
+      this.httpService.get(`${this.newsApi}/everything?${queryParams}`, {
+        headers: { 'X-Api-Key': apiKey },
+      }),
     );
     return response.data;
   }
@@ -29,15 +40,20 @@ export class NewsService {
     apiKey,
     category,
     query,
+    language,
     country,
     page,
     take,
   }: GetTopNewsRequest): Promise<NewsApiDataResponse> {
+    const queryParams = stringify(
+      { q: query, category, country, page, take, language },
+      { skipNulls: true },
+    );
+    console.log(queryParams);
     const response = await firstValueFrom(
-      this.httpService.get(
-        `${this.newsApi}/top-headlines?q=${query}&category=${category}&country=${country}&page=${page}&pageSize=${take}`,
-        { headers: { 'X-Api-Key': apiKey } },
-      ),
+      this.httpService.get(`${this.newsApi}/top-headlines?${queryParams}`, {
+        headers: { 'X-Api-Key': apiKey },
+      }),
     );
     return response.data;
   }

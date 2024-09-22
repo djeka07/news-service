@@ -21,31 +21,40 @@ export class GetNewsRequest extends GetNewsBaseRequest {
     take: number,
     sortBy: string,
     language: string,
-    query: string = '',
+    dateFrom?: string,
+    dateTo?: string,
+    query: string = '*',
   ) {
     super(apiKey, page, take, query);
     this.sortBy = sortBy;
     this.language = language;
+    this.dateFrom = dateFrom;
+    this.dateTo = dateTo;
   }
   sortBy: string;
   language: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export class GetTopNewsRequest extends GetNewsBaseRequest {
   constructor(
     apiKey: string,
-    country: string,
     page: number,
     take: number,
+    language?: string,
+    country?: string,
     query: string = '',
     category: string = '',
   ) {
     super(apiKey, page, take, query);
     this.country = country;
     this.category = category;
+    this.language = language;
   }
-  country: string;
+  country?: string;
   category?: string;
+  language?: string;
 }
 
 export class NewsSourceRequest {
