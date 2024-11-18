@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { Image } from 'src/azure/azure.request';
 import {
   NewsApiSourceResponse,
   NewsArticleResponse,
@@ -15,14 +16,21 @@ export class NewsSearchArticleSource {
 }
 
 export class NewsSearchArticle {
-  constructor(article: NewsArticleResponse) {
+  constructor(
+    article: NewsArticleResponse,
+    imagePath: string,
+    uploadedImages: Image[],
+  ) {
     this.id = createHash('sha1').update(article.url).digest('hex');
     this.source = new NewsSearchArticleSource(article.source);
     this.author = article.author;
     this.title = article.title;
     this.description = article.description || undefined;
     this.url = article.url;
-    this.image = article.urlToImage || undefined;
+    const imageUrl = uploadedImages?.find(
+      (uploadedImage) => uploadedImage.name === this.id,
+    )?.url;
+    this.image = !!imageUrl ? `${imagePath}/${imageUrl}` : null;
     this.published = article.published;
   }
 
@@ -32,6 +40,6 @@ export class NewsSearchArticle {
   title: string;
   description?: string;
   url: string;
-  image?: string;
+  image: string | null;
   published: string;
 }

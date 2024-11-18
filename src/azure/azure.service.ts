@@ -22,13 +22,13 @@ export class AzureService {
     this.client = ShareServiceClient.fromConnectionString(connectionString);
   }
 
-  async uploadImages(images: Image[]) {
+  async uploadImages(images: Image[]): Promise<Image[]> {
     this.loggerService.info(`Starting to upload ${images.length}`);
     const directoryClient = this.client
       .getShareClient(this.shareName)
       .getDirectoryClient('');
 
-    await Promise.all(
+    const imgs = await Promise.all(
       images.map(async (image) => {
         const imageExtension = image.url?.split('?')?.[0]?.split('.').pop();
         const imageName = `${image.name}.${imageExtension}`;
@@ -48,12 +48,15 @@ export class AzureService {
             totalLength,
             totalLength,
           );
+          return { name: image.name, url: imageName };
         } catch (error) {
           this.loggerService.error(
             `Failed uploading image ${imageName} ${error?.message}`,
           );
+          return null;
         }
       }),
     );
+    return imgs.filter((img): img is Image => !!img);
   }
 }

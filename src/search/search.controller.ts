@@ -1,26 +1,26 @@
 import { Controller, Get } from '@nestjs/common';
-import { SearchTaskService } from './search.task.service';
+import { ConfigService } from '@nestjs/config';
 import { Public } from 'src/auth/auth.decorator';
 import { AzureService } from 'src/azure/azure.service';
 import { SearchService } from './search.service';
+import { SearchTaskService } from './search.task.service';
 
 @Controller('/api/v1/search')
 export class SearchController {
+  private imagePath: string;
   constructor(
     private readonly searchTaskService: SearchTaskService,
     private readonly searchService: SearchService,
     private readonly azureService: AzureService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.imagePath = configService.getOrThrow<string>('IMAGE_PATH');
+  }
 
   @Public()
   @Get()
   async get() {
-    const result = await this.searchService.get();
-    const images = result.results
-      .filter((r) => !!r.image)
-      .map((r) => ({ name: r.id, url: r.image }));
-    console.log(images);
-    await this.azureService.uploadImages(images);
-    return result;
+    await this.searchTaskService.deleteDocuments();
+    this.searchTaskService.handleCron();
   }
 }
